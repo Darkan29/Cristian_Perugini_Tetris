@@ -252,9 +252,6 @@ const int *TetrominoTypes[7][4] =
     {LTetromino0, LTetromino90, LTetromino180, LTetromino270}
 };
 
-
-
-
 void drawTetromino(const Color currentColor, const int startOffsetX, const int startOffsetY, const int tetrominoStartX, const int tetrominoStartY, const int *tetromino)
 {
     for (int y = 0; y < TETROMINO_SIZE; y++)
@@ -291,10 +288,8 @@ void ResetLines(int startLineY)
 
 void DeleteLines()
 {
-    
     for (int y = 0; y < STAGE_HEIGHT -1; y++)
     {
-
         int checkLine = 1;
 
         for (int x = 1; x < STAGE_WIDTH-1; x++)
@@ -335,6 +330,9 @@ int main(int argc, char** argv, char** environ)
     float moveTetrominoDownTimer = 1.f;
     float timeToMoveTetrominoDown = moveTetrominoDownTimer;
 
+    int score = 0;
+    int points_per_line = 10;
+
     time_t unixTime;
 
     time(&unixTime);
@@ -361,11 +359,22 @@ int main(int argc, char** argv, char** environ)
 
     InitWindow(windowWidth, windowHeight, "Title");
 
+    InitAudioDevice();
+
+    Music background_Sound = LoadMusicStream("Tetris/Background_Sound.mp3");
+    Sound rotation_Sound = LoadSound("Tetris/Rotation_Sound.mp3");
+    Sound stack_Sound = LoadSound("Tetris/Stack_Sound.mp3");
+
+    PlayMusicStream(background_Sound);
+
     SetTargetFPS(60);
     
 
     while (!WindowShouldClose())
     {
+        SetMusicVolume(background_Sound, 0.05f);
+        UpdateMusicStream(background_Sound);
+
         timeToMoveTetrominoDown -= GetFrameTime();
 
         if (IsKeyPressed(KEY_SPACE))
@@ -382,14 +391,14 @@ int main(int argc, char** argv, char** environ)
             {
                 currentTetrominoRotation = lastRotation;
             }
-            
-            
+            else
+            {
+                PlaySound(rotation_Sound);
+            }
         }
 
         if (timeToMoveTetrominoDown <= 0 || IsKeyPressed(KEY_DOWN))
         {
-
-
             if (!CheckCollision(currentTetrominoX, currentTetrominoY+1, TetrominoTypes[currentTetrominoType][currentTetrominoRotation]))
             {
                 currentTetrominoY++;
@@ -414,12 +423,14 @@ int main(int argc, char** argv, char** environ)
                             const int offset_stage = (y+currentTetrominoY) * STAGE_WIDTH + (x+currentTetrominoX);
 
                             stage[offset_stage] = currentColor+1;
+
+                            PlaySound(stack_Sound);
                         }
                     }
                 }
 
                 DeleteLines();
-
+                
                 currentTetrominoX = tetrominoStartX;
                 currentTetrominoY = tetrominoStartY;
 
@@ -444,11 +455,10 @@ int main(int argc, char** argv, char** environ)
             }
         }
         
-        
-
-
         BeginDrawing();
         ClearBackground(RED);
+
+        DrawText(TextFormat("Score: %d", score), 175, 20, 40, BLACK);
 
         for (int y = 0; y < STAGE_HEIGHT; y++)
         {
@@ -473,6 +483,10 @@ int main(int argc, char** argv, char** environ)
         EndDrawing();
     }
     
+
+    UnloadMusicStream(background_Sound);
+
+    CloseAudioDevice();
 
     return 0;
 } 

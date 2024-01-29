@@ -241,6 +241,8 @@ const Color colorTypes[8]=
     {85, 45, 63, 255},
 };
 
+//int score = SCORE;
+
 const int *TetrominoTypes[7][4] =
 {
     {ZTetromino0, ZTetromino90, ZTetromino180, ZTetromino270}, 
@@ -286,6 +288,8 @@ void ResetLines(int startLineY)
     }
 }
 
+int score = SCORE;
+
 void DeleteLines()
 {
     for (int y = 0; y < STAGE_HEIGHT -1; y++)
@@ -308,8 +312,26 @@ void DeleteLines()
             const int offset = y * STAGE_WIDTH + 1;
             memset(stage+offset, 0, (STAGE_WIDTH-2 )* sizeof(int));
 
+
+            score += POINTS_PER_LINE;
             ResetLines(y);
         }
+    }
+}
+
+void ChangeLevel(int score, float *timer)
+{
+    if (score == FIRST_LEVEL)
+    {
+        *timer = 0.6;
+    }
+    else if(score == SECOND_LEVEL)
+    {
+        *timer = 0.4;
+    }
+    else if (score == THIRD_LEVEL)
+    {
+        *timer = 0.2;
     }
 }
 
@@ -329,9 +351,6 @@ int main(int argc, char** argv, char** environ)
 
     float moveTetrominoDownTimer = 1.f;
     float timeToMoveTetrominoDown = moveTetrominoDownTimer;
-
-    int score = 0;
-    int points_per_line = 10;
 
     time_t unixTime;
 
@@ -369,13 +388,14 @@ int main(int argc, char** argv, char** environ)
 
     SetTargetFPS(60);
     
+    SetMusicVolume(background_Sound, 0.05f);
 
     while (!WindowShouldClose())
     {
-        SetMusicVolume(background_Sound, 0.05f);
         UpdateMusicStream(background_Sound);
 
         timeToMoveTetrominoDown -= GetFrameTime();
+        
 
         if (IsKeyPressed(KEY_SPACE))
         {
@@ -430,6 +450,8 @@ int main(int argc, char** argv, char** environ)
                 }
 
                 DeleteLines();
+
+                ChangeLevel(score, &moveTetrominoDownTimer);
                 
                 currentTetrominoX = tetrominoStartX;
                 currentTetrominoY = tetrominoStartY;
@@ -439,6 +461,8 @@ int main(int argc, char** argv, char** environ)
                 currentColor = GetRandomValue(0,7);
             }
         }
+
+        
 
         if (IsKeyPressed(KEY_RIGHT))
         {

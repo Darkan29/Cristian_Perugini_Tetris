@@ -1,4 +1,4 @@
-#include "raylib.h"
+#include "../raylib.h"
 #include <time.h>
 #include <string.h>
 #include "Tetris.h"

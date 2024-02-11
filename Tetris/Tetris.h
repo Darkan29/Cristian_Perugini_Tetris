@@ -1,4 +1,4 @@
-#include "raylib.h"
+#include "../raylib.h"
 
 #define STAGE_WIDTH 12
 #define STAGE_HEIGHT 22
